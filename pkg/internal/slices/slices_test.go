@@ -1,7 +1,7 @@
 package slices_test
 
 import (
-	"github.com/fbiville/go-usain-go/pkg/slices"
+	"github.com/fbiville/go-usain-go/pkg/internal/slices"
 	"reflect"
 	"testing"
 	"testing/quick"

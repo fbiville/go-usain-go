@@ -2,8 +2,8 @@ package packstream_test
 
 import (
 	"fmt"
-	"github.com/fbiville/go-usain-go/pkg/packstream"
-	"github.com/fbiville/go-usain-go/pkg/slices"
+	"github.com/fbiville/go-usain-go/pkg/internal/packstream"
+	"github.com/fbiville/go-usain-go/pkg/internal/slices"
 	. "github.com/onsi/gomega"
 	"testing"
 )

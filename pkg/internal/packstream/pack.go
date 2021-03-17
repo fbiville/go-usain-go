@@ -2,7 +2,7 @@ package packstream
 
 import (
 	"fmt"
-	"github.com/fbiville/go-usain-go/pkg/slices"
+	"github.com/fbiville/go-usain-go/pkg/internal/slices"
 	"sort"
 	"strings"
 	"sync"

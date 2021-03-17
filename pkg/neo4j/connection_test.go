@@ -1,9 +1,9 @@
-package bolt_test
+package neo4j_test
 
 import (
 	"context"
 	"fmt"
-	"github.com/fbiville/go-usain-go/pkg/bolt"
+	"github.com/fbiville/go-usain-go/pkg/neo4j"
 	. "github.com/onsi/gomega"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -28,17 +28,10 @@ func TestConnection(t *testing.T) {
 	Expect(err).NotTo(HaveOccurred(), "container should return mapped port")
 	address := fmt.Sprintf("bolt://localhost:%d", port.Int())
 
-	connectionId, err := bolt.Connect(address, username, password)
+	connectionId, err := neo4j.Connect(address, username, password)
 
 	Expect(err).NotTo(HaveOccurred(), "connection should work")
 	Expect(connectionId).NotTo(BeEmpty())
-}
-
-type ContainerStdoutLogger struct {
-}
-
-func (s *ContainerStdoutLogger) Accept(log testcontainers.Log) {
-	fmt.Print(string(log.Content))
 }
 
 func startContainer(ctx context.Context, username, password string) (testcontainers.Container, error) {

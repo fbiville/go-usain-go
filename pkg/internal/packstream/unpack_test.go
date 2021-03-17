@@ -3,7 +3,7 @@ package packstream_test
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/fbiville/go-usain-go/pkg/packstream"
+	"github.com/fbiville/go-usain-go/pkg/internal/packstream"
 	. "github.com/onsi/gomega"
 	"math"
 	"strings"
