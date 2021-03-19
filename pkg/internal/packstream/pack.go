@@ -3,6 +3,7 @@ package packstream
 import (
 	"fmt"
 	"github.com/fbiville/go-usain-go/pkg/internal/slices"
+	"math"
 	"sort"
 	"strings"
 	"sync"
@@ -33,6 +34,40 @@ func (n *Nil) String() string {
 	return "<nil>"
 }
 
+type Integer int
+
+func (i Integer) Pack() []byte {
+	if -16 <= i && i <= math.MaxInt8 {
+		return []byte{byte(i)}
+	}
+	if math.MinInt8 <= i && i <= -17 {
+		return []byte{0xC8, byte(i)}
+	}
+	if math.MinInt16 <= i && i <= math.MinInt8-1 || math.MaxInt8+1 <= i && i <= math.MaxInt16 {
+		result := make([]byte, 3)
+		result[0] = 0xC9
+		Endianness.PutUint16(result[1:], uint16(i))
+		return result
+	}
+	if math.MinInt32 <= i && i <= math.MinInt16-1 || math.MaxInt16+1 <= i && i <= math.MaxInt32 {
+		result := make([]byte, 5)
+		result[0] = 0xCA
+		Endianness.PutUint32(result[1:], uint32(i))
+		return result
+	}
+	if math.MinInt64 <= i && i <= math.MinInt32-1 || math.MaxInt32+1 <= i && i <= math.MaxInt64 {
+		result := make([]byte, 9)
+		result[0] = 0xCB
+		Endianness.PutUint64(result[1:], uint64(i))
+		return result
+	}
+	panic("only 64-bit value range are supported")
+}
+
+func (i Integer) String() string {
+	return fmt.Sprintf("%d", i)
+}
+
 type String string
 
 func (s *String) Pack() []byte {
@@ -44,6 +79,31 @@ func (s *String) Pack() []byte {
 
 func (s *String) String() string {
 	return fmt.Sprintf("%q", string(*s))
+}
+
+type List []Value
+
+func (l *List) Pack() []byte {
+	marker := byte(0x90 + len(*l)) // FIXME: does not support max value range
+	var result []byte
+	for _, value := range *l {
+		result = append(result, value.Pack()...)
+	}
+	return slices.PrependByte(marker, result)
+}
+
+func (l *List) String() string {
+	builder := strings.Builder{}
+	builder.WriteString("[")
+	values := []Value(*l)
+	for i, value := range values {
+		builder.WriteString(value.String())
+		if i < len(values)-1 {
+			builder.WriteString(",")
+		}
+	}
+	builder.WriteString("]")
+	return builder.String()
 }
 
 type Dictionary map[string][]Value
@@ -84,12 +144,12 @@ func (d *Dictionary) Length() int {
 
 func (d *Dictionary) String() string {
 	str := strings.Builder{}
-	str.WriteString("{\n")
+	str.WriteString("{")
 	dictionary := d.asMap()
 	keys := d.sortedKeys(dictionary)
 	for _, key := range keys {
 		for _, value := range dictionary[key] {
-			str.WriteString(fmt.Sprintf("\t%q: %s,\n", key, value.String()))
+			str.WriteString(fmt.Sprintf("\t%q: %s,", key, value.String()))
 		}
 	}
 	str.WriteString("}")

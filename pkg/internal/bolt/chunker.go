@@ -14,9 +14,13 @@ type Chunker struct {
 }
 
 // FIXME: assumes message is writable to a single chunk
-func (c *Chunker) WriteChunked(rawMessage []byte) error {
-	message := chunk(rawMessage)
-	_, err := c.Connection.Write(message)
+func (c *Chunker) WriteChunked(rawMessages ...[]byte) error {
+	var payload []byte
+	for _, message := range rawMessages {
+		chunked := chunk(message)
+		payload = append(payload, chunked...)
+	}
+	_, err := c.Connection.Write(payload)
 	return err
 }
 
@@ -31,9 +35,9 @@ func (c *Chunker) ReadUnchunked() ([]byte, error) {
 		return nil, fmt.Errorf("could not read response chunk")
 	}
 	responseSize := packstream.Endianness.Uint16(chunk)
-	response := make([]byte, responseSize)
+	response := make([]byte, responseSize+2)
 	err = binary.Read(c.Connection, packstream.Endianness, response)
-	return response, err
+	return response[0:responseSize], err
 }
 
 func chunk(rawMessage []byte) []byte {
